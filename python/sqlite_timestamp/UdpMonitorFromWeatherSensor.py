@@ -22,8 +22,9 @@ INSERT INTO t_weather(did, measurement_time, temp_out, temp_in, humid, pressure)
  VALUES (?, ?, ?, ?, ?, ?)  
 """
 
-# args option default
+# UDP受信ポート
 WEATHER_UDP_PORT: int = 2222
+# UDP受信バッファ
 BUFF_SIZE: int = 1024
 # UDP packet receive timeout 12 minutes
 RECV_TIMEOUT: float = 12. * 60
@@ -161,21 +162,15 @@ def loop(client: socket.socket):
             line: str = data.decode("utf-8")
             record: List[str] = line.split(",")
             # Insert weather DB with local time
-            # https://docs.python.org/ja/3/library/time.html
-            #  エポック (epoch) からの秒数を浮動小数点数で返します。
-            curr_time: float
-            if mk_time == 'local':
-                curr_time = time.time()
-                # time.time() は下記とほぼ同じ結果になる ※こちらのほうが精度が高い
-                # local_time: time.struct_time = time.localtime()
-                # curr_time: float = time.mktime(local_time)
-            else:
-                # ERROR 'time.struct_time' object cannot be interpreted as an integer
-                # curr_time = time.gmtime()
-                gm_time: time.struct_time = time.gmtime()
-                curr_time = time.mktime(gm_time)
+            # unix time ※こちらのほうが精度が高い
+            # curr_time: float = time.time()
+            # local time (UTC + 9H) -> unix time
+            local_time: time.struct_time = time.localtime()
+            curr_time: float = time.mktime(local_time)
+            # これは確認用
             dt: datetime = datetime.fromtimestamp(curr_time)
             app_logger.debug(f"{curr_time} ({dt.strftime(F_DATETIME)})")
+            # レコード登録
             insert(record[0], record[1], record[2], record[3], record[4],
                    measurement_time=curr_time, logger=app_logger)
         except socket.timeout as timeout:
@@ -190,12 +185,9 @@ if __name__ == '__main__':
 
     parser: argparse.ArgumentParser = argparse.ArgumentParser()
     # SQLite3 データベースパス
-    #  for localtime:~/db/weather.db / for utc time: ~/db/weather_utc_db
+    #  for localtime:~/db/weather.db
     parser.add_argument("--sqlite3-db", type=str, required=True,
                         help="QLite3 データベースパス")
-    parser.add_argument("--timestamp", choices=['local', 'utc'],
-                        default='local', type=str, required=False,
-                        help="タイムスタンプ生成time: local=time.local() | utc=time.gmtime()")
     args: argparse.Namespace = parser.parse_args()
     # データベースパス
     weather_db: str = os.path.expanduser(args.sqlite3_db)
@@ -203,11 +195,9 @@ if __name__ == '__main__':
         app_logger.warning("database not found!")
         exit(1)
 
-    mk_time: str = args.timestamp
-    hostname: str = socket.gethostname()
     # Receive broadcast.
     broad_address = ("", WEATHER_UDP_PORT)
-    app_logger.info(f"{hostname} Listen: {broad_address}")
+    app_logger.info(f"Listen: {broad_address}")
     # UDP client
     udp_client: socket.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     app_logger.info(f"udp_client: {udp_client}")

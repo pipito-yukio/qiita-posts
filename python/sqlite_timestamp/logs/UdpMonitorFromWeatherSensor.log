@@ -1,9 +1,8 @@
-$ python UdpMonitorFromWeatherSensor.py --sqlite3-db ~/db/weather_db
-INFO Dell-T7500 Listen: ('', 2222)
+(py_sqlite3) $ python UdpMonitorFromWeatherSensor.py --sqlite3-db ~/db/weather_db
+INFO Listen: ('', 2222)
 INFO udp_client: <socket.socket fd=3, family=AddressFamily.AF_INET, type=SocketKind.SOCK_DGRAM, proto=0, laddr=('0.0.0.0', 0)>
 INFO server ip: ('192.168.0.31', 2222)
-DEBUG 1698807742.8489323 (2023-11-01 12:02:22)
+DEBUG 1698807742.0 (2023-11-01 12:02:22)
 DEBUG (1, 1698807742, 15.2, 19.3, 57.6, 1008.7)
-DEBUG 1698808327.196249 (2023-11-01 12:12:07)
+DEBUG 1698808327.0 (2023-11-01 12:12:07)
 DEBUG (1, 1698808327, 15.1, 19.3, 62.3, 1008.7)
-

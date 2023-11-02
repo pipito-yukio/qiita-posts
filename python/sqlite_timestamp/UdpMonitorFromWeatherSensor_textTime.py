@@ -186,10 +186,9 @@ if __name__ == '__main__':
         app_logger.warning("database not found!")
         exit(1)
 
-    hostname: str = socket.gethostname()
     # Receive broadcast.
     broad_address = ("", WEATHER_UDP_PORT)
-    app_logger.info(f"{hostname} Listen: {broad_address}")
+    app_logger.info(f"Listen: {broad_address}")
     # UDP client
     udp_client: socket.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     app_logger.info(f"udp_client: {udp_client}")
