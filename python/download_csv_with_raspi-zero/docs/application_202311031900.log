@@ -1,0 +1,8 @@
+2023-11-03 19:00:45 INFO GetCSVFromWeather.py(22)[<module>] Namespace(date_from='2021-12-01', date_to='2023-10-31', device_name='esp8266_1', with_device_csv=False, without_header=False)
+2023-11-03 19:00:45 DEBUG weatherdb.py(335)[_build_query] 
+    SELECT did, datetime(measurement_time, 'unixepoch', 'localtime'), temp_out, temp_in, humid, pressure
+    FROM t_weather WHERE did=? 
+    AND (measurement_time >= strftime('%s', ?, '-9 hours') AND measurement_time < strftime('%s', ?, '-9 hours')) ORDER BY did, measurement_time
+2023-11-03 19:00:46 INFO weatherdb.py(390)[find] Record count: 103473
+2023-11-03 19:00:46 INFO weatherdb.py(395)[find] Return CSV iterator
+2023-11-03 19:01:08 INFO GetCSVFromWeather.py(35)[<module>] Saved Weather CSV: /home/pi/datas/weather_esp8266_1_20211201-20231031_20231103.csv

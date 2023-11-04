@@ -1,0 +1,41 @@
+■ 103473件のレコードのCSVダウンロード時間
+
+1.ブラウザは約3分半くらいかかる
+$ date +"%Y-%m-%d %H:%M:%S"
+2023-11-03 18:47:00
+$ date +"%Y-%m-%d %H:%M:%S"
+2023-11-03 18:50:23
+
+$ ls -lrt --time-style long-iso
+-rw-rw-r-- 1 yukio yukio   4719256 2023-11-03 18:50 weather_esp8266_1_20211201-20231031_20231103.csv
+
+
+2.バッチ実行では30秒位
+raspi-zeroで実行
+
+Last login: Fri Nov  3 16:54:04 2023 from 192.168.0.101
+pi@raspi-zero:~ $ cd bin
+pi@raspi-zero:~/bin $ export OUTPUT_CSV_PATH=~/datas
+pi@raspi-zero:~/bin $ ./getcsv_from_weather.sh --device-name esp8266_1 \
+> --date-from '2021-12-01' --date-to '2023-10-31'
+getcsv_from_weather.sh --device-name esp8266_1 --date-from 2021-12-01 --date-to   
+pigpio/GetCSVFromWeather.py --device-name esp8266_1 --date-from 2021-12-01 --date-to 2023-10-31
+create_logger(app_name:main_app)
+logFile:/home/pi/logs/pigpio/application_202311031900.log
+
+
+pi@raspi-zero:~/logs/pigpio $ ls -lrt --time-style long-iso
+...省略...
+-rw-r--r-- 1 pi   pi    808 2023-11-03 19:01 application_202311031900.log
+
+
+$ scp pi@raspi-zero:~/datas/weather_esp8266*.csv .
+weather_esp8266_1_20211201-20231031_20231103.csv       100% 4609KB   3.5MB/s   00:01    
+$ scp pi@raspi-zero:~/logs/pigpio/application_*.log .
+application_202311031900.log                           100%  808   269.8KB/s   00:00
+
+2023-11-03 19:00:45 INFO GetCSVFromWeather.py(22)[<module>] 
+Namespace(date_from='2021-12-01', date_to='2023-10-31', device_name='esp8266_1', 
+with_device_csv=False, without_header=False)
+2023-11-03 19:01:08 INFO GetCSVFromWeather.py(35)[<module>] 
+Saved Weather CSV: /home/pi/datas/weather_esp8266_1_20211201-20231031_20231103.csv
