@@ -1,12 +1,14 @@
 import logging
 import sqlite3
-from datetime import date
+from datetime import date, datetime, timedelta
 from typing import List, Optional, Tuple
 
 """
 Weather database CRUD functions, Finder class
 for python 3.7.x
 """
+
+FMT_ISO8601_DATE: str = "%Y-%m-%d"
 
 
 def get_connection(db_path: str,
@@ -44,6 +46,15 @@ def find_device(conn: sqlite3.Connection, device_name: str,
         return rec[0]
 
     return None
+
+
+def strdate2timestamp(s_date: str) -> Optional[datetime]:
+    ts: Optional[datetime]
+    try:
+        ts = datetime.strptime(s_date, FMT_ISO8601_DATE)
+    except ValueError as e:
+        raise e
+    return ts
 
 
 class WeatherFinder:
@@ -156,7 +167,14 @@ ORDER BY measurement_time;
         if did is None:
             return []
 
-        params: Tuple = (did, date_from, date_to)
+        # 検索終了日をdatetimeオブジェクトに変換
+        exclude_to_datetime: datetime = strdate2timestamp(date_to)
+        # 含まない終了日 = 検索終了日 + 1日
+        exclude_to_datetime += timedelta(days=1)
+        # ISO8601形式文字列に戻す
+        exclude_to_date: str = exclude_to_datetime.strftime(FMT_ISO8601_DATE)
+        # 検索開始日 <= 測定時刻 < 検索終了日の翌日　※検索開始日〜検索終了日のデータ取得
+        params: Tuple = (did, date_from, exclude_to_date)
         try:
             # Check record count
             self.cursor = self.conn.cursor()

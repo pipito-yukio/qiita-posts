@@ -1,21 +1,21 @@
 (py_sqlite3) $ python GetCSVFromWeather.py --device-name esp8266_1 \
 > --date-from '2021-12-01' --date-to '2023-10-31'
-2023-11-04 09:44:57,378 INFO PATH_WEATHER_DB: /home/yukio/db/weather.db
-2023-11-04 09:44:57,379 INFO OUTPUT_CSV_PATH: ~/Downloads/csv/
-2023-11-04 09:44:57,383 INFO Namespace(device_name='esp8266_1', date_from='2021-12-01', date_to='2023-10-31')
-2023-11-04 09:44:57,384 INFO <dao.weatherdb.WeatherFinder object at 0x7f55bfe67430>
-2023-11-04 09:44:57,391 INFO Record count: 103325
-2023-11-04 09:44:57,391 INFO Return CSV iterator
-2023-11-04 09:44:57,392 INFO type(csv_iterable): <class 'generator'>
-2023-11-04 09:44:57,932 INFO Saved Weather CSV: /home/yukio/Downloads/csv/weather_esp8266_1_20211201_20231031_20231104.csv
+2023-11-05 08:45:54,423 INFO PATH_WEATHER_DB: /home/yukio/db/weather.db
+2023-11-05 08:45:54,424 INFO OUTPUT_CSV_PATH: ~/Downloads/csv/
+2023-11-05 08:45:54,429 INFO Namespace(device_name='esp8266_1', date_from='2021-12-01', date_to='2023-10-31')
+2023-11-05 08:45:54,429 INFO <db.weatherdb.WeatherFinder object at 0x7f74d1467d90>
+2023-11-05 08:45:54,596 INFO Record count: 103473
+2023-11-05 08:45:54,598 INFO Return CSV Generator
+2023-11-05 08:45:54,598 INFO type(csv_iterable): <class 'generator'>
+2023-11-05 08:45:55,221 INFO Saved Weather CSV: /home/yukio/Downloads/csv/weather_esp8266_1_20211201_20231031_20231105.csv
 
 (py_sqlite3) $ python GetCSVFromWeather.py --device-name esp8266_1 \
 > --date-from '2021-12-01' --date-to '2021-12-31'
-2023-11-04 09:45:57,087 INFO PATH_WEATHER_DB: /home/yukio/db/weather.db
-2023-11-04 09:45:57,087 INFO OUTPUT_CSV_PATH: ~/Downloads/csv/
-2023-11-04 09:45:57,092 INFO Namespace(device_name='esp8266_1', date_from='2021-12-01', date_to='2021-12-31')
-2023-11-04 09:45:57,092 INFO <dao.weatherdb.WeatherFinder object at 0x7f1a6c95b610>
-2023-11-04 09:45:57,093 INFO Record count: 4437
-2023-11-04 09:45:57,093 INFO Return CSV list
-2023-11-04 09:45:57,122 INFO type(csv_iterable): <class 'list'>
-2023-11-04 09:45:57,123 INFO Saved Weather CSV: /home/yukio/Downloads/csv/weather_esp8266_1_20211201_20211231_20231104.csv
+2023-11-05 08:46:52,700 INFO PATH_WEATHER_DB: /home/yukio/db/weather.db
+2023-11-05 08:46:52,701 INFO OUTPUT_CSV_PATH: ~/Downloads/csv/
+2023-11-05 08:46:52,705 INFO Namespace(device_name='esp8266_1', date_from='2021-12-01', date_to='2021-12-31')
+2023-11-05 08:46:52,705 INFO <db.weatherdb.WeatherFinder object at 0x7f7b72d3f490>
+2023-11-05 08:46:52,709 INFO Record count: 4585
+2023-11-05 08:46:52,709 INFO Return CSV list
+2023-11-05 08:46:52,738 INFO type(csv_iterable): <class 'list'>
+2023-11-05 08:46:52,740 INFO Saved Weather CSV: /home/yukio/Downloads/csv/weather_esp8266_1_20211201_20211231_20231105.csv
