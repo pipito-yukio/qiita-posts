@@ -1,11 +1,12 @@
 import argparse
 import logging
 import os
-from typing import Iterator, List, Optional
-from dao.weatherdb import WeatherFinder
+from typing import Optional
+from db.weatherdb import WeatherFinder
 
 """
 Export t_weather to CSV file.
+for python 3.7.x
 """
 
 # SQLite3 Databaseファイルパス
@@ -37,7 +38,7 @@ if __name__ == '__main__':
         weather_finder = WeatherFinder(db_path, logger=app_logger)
         app_logger.info(weather_finder)
         # from t_weather to csv
-        csv_iterable: Iterator[str] | List[str] = weather_finder.find(
+        csv_iterable = weather_finder.find(
             args.device_name, date_from=args.date_from, date_to=args.date_to
         )
         app_logger.info(f"type(csv_iterable): {type(csv_iterable)}")
