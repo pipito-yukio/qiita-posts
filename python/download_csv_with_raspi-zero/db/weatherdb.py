@@ -48,13 +48,17 @@ def find_device(conn: sqlite3.Connection, device_name: str,
     return None
 
 
-def strdate2timestamp(s_date: str) -> Optional[datetime]:
-    ts: Optional[datetime]
+# ISO8601形式文字列の翌日を取得する
+def get_next_iso8601date(s_date: str) -> str:
     try:
-        ts = datetime.strptime(s_date, FMT_ISO8601_DATE)
+        # ISO8601形式文字列をdatetimeオブジェクトに変換
+        dt_obj: datetime = datetime.strptime(s_date, FMT_ISO8601_DATE)
+        # 翌日 = 引数の日時 + 1日
+        dt_obj += timedelta(days=1)
+        # ISO8601形式文字列に戻す
+        return dt_obj.strftime(FMT_ISO8601_DATE)
     except ValueError as e:
         raise e
-    return ts
 
 
 class WeatherFinder:
@@ -90,13 +94,14 @@ ORDER BY measurement_time;
     _GENERATOR_WEATHER_THRESHOLD: int = 10000
     _GENERATOR_WEATHER_BATCH_SIZE: int = 1000
     # CSV constants
-    _FMT_WEATHER_CSV_LINE = '{},"{}",{},{},{},{}'
+    _FMT_WEATHER_CSV_LINE: str = '{},"{}",{},{},{},{}'
     # Public const
     # CSV t_weather Header
-    CSV_WEATHER_HEADER = '"did","measurement_time","temp_out","temp_in","humid","pressure"\n'
+    CSV_WEATHER_HEADER: str = '"did","measurement_time","temp_out","temp_in","humid","pressure"\n'
 
     def __init__(self, db_path: str, logger: Optional[logging.Logger] = None):
-        self.logger = logger
+        self.logger: logging.Logger = logger
+        self.isLogLevelDebug: bool
         if logger is not None and (logger.getEffectiveLevel() <= logging.DEBUG):
             self.isLogLevelDebug = True
         else:
@@ -104,7 +109,6 @@ ORDER BY measurement_time;
         self.db_path: str = db_path
         self.conn: Optional[sqlite3.Connection] = None
         self.cursor: Optional[sqlite3.Cursor] = None
-        self.csv_iter = None
         self._csv_name: Optional[str] = None
 
     def close(self):
@@ -139,7 +143,7 @@ ORDER BY measurement_time;
                                                         rec[4] if rec[4] is not None else '',
                                                         rec[5] if rec[5] is not None else '')
 
-    def _csv_list(self):
+    def _csv_list(self) -> List[str]:
         """
         Get CSV list
           line: did, "YYYY-mm-DD HH:MM:SS(measurement_time)",temp_out,temp_in,humid,pressure
@@ -153,6 +157,10 @@ ORDER BY measurement_time;
                                                   rec[4] if rec[4] is not None else '',
                                                   rec[5] if rec[5] is not None else '') for rec in self.cursor]
 
+    # 戻り値の型は python3.8以上では Generator(or Iterator or Iterable) [str] | List[str] ですが
+    # 実行環境のラズパイゼロのpython3.7がジェネレータの型をサポートしていないため
+    # TypeError: unsupported operand type(s) for |: '_GenericAlias' and '_GenericAlias'
+    # この関数の戻り値を定義しないことにしました
     def find(self, device_name: str, date_from: str, date_to: str):
         # Build csv filename suffix
         date_part: date = date.today()
@@ -167,14 +175,12 @@ ORDER BY measurement_time;
         if did is None:
             return []
 
-        # 検索終了日をdatetimeオブジェクトに変換
-        exclude_to_datetime: datetime = strdate2timestamp(date_to)
-        # 含まない終了日 = 検索終了日 + 1日
-        exclude_to_datetime += timedelta(days=1)
-        # ISO8601形式文字列に戻す
-        exclude_to_date: str = exclude_to_datetime.strftime(FMT_ISO8601_DATE)
+        # 検索終了日の翌日
+        exclude_to_date: str = get_next_iso8601date(date_to)
         # 検索開始日 <= 測定時刻 < 検索終了日の翌日　※検索開始日〜検索終了日のデータ取得
         params: Tuple = (did, date_from, exclude_to_date)
+        if self.logger is not None:
+            self.logger.info("params: {}".format(params))
         try:
             # Check record count
             self.cursor = self.conn.cursor()
