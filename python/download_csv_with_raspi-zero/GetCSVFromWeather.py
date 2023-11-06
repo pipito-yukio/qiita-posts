@@ -12,7 +12,7 @@ for python 3.7.x
 # SQLite3 Databaseファイルパス
 PATH_WEATHER_DB: str = os.environ.get("PATH_WEATHER_DB", "~/db/weather.db")
 # CSV出力パス
-OUTPUT_CSV_PATH = os.environ.get("OUTPUT_CSV_PATH", "~/Downloads/csv/")
+OUTPUT_CSV_PATH: str = os.environ.get("OUTPUT_CSV_PATH", "~/Downloads/csv/")
 
 
 if __name__ == '__main__':
