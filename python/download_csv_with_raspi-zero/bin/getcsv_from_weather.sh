@@ -9,8 +9,8 @@ Usage: $SCRIP_NAME OPTIONS
 Execute GetCSVFromWeather.py OPTIONS
 
 --device-name: Required 'ESP module device name'
---date-from: Optional SQL Criteria Start date in t_weahter.
---date-to: Optional SQL Criteria End date in t_weahter.
+--date-from: Required SQL Criteria Start date in t_weahter.
+--date-to: Required SQL Criteria End date in t_weahter.
 --help	display this help and exit
 
 Example:
