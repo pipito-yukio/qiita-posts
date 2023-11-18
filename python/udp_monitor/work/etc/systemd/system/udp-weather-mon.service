@@ -1,0 +1,11 @@
+[Unit]
+Description=UDPClient Weather data monitor service
+
+[Service]
+Type=simple
+EnvironmentFile=/etc/default/udp-weather-mon
+ExecStart=/home/pi/bin/udp_monitor_from_weather_sensor.sh
+User=pi
+
+[Install]
+WantedBy=multi-user.target
