@@ -1,0 +1,14 @@
+[Unit]
+Description=PostgreSQL Start service with docker
+After=docker.service
+
+[Service]
+Type=notify
+TimeoutStartSec=0
+NotifyAccess=all
+EnvironmentFile=/etc/default/postgres-docker
+ExecStart=/bin/sh -c "/home/pi/bin/postgres-docker.sh start $BUILD_PATH"
+User=pi
+
+[Install]
+WantedBy=multi-user.target
