@@ -72,24 +72,24 @@ def make_graph(df_data: DataFrame) -> Figure:
 
     #  外気温のプロット
     ax_temp.plot(df_data[COL_TIME], df_data[COL_TEMP_OUT], color="blue", marker="")
-    # 最低気温
+    # 横線: 最低気温
     temper: float = round(df_data[COL_TEMP_OUT].min(), 1)
     ax_temp.axhline(temper, label=f"最低 {temper:4.1f} ℃",
                     color=COLOR_MIN_TEMPER, linestyle="dashed", linewidth=1.)
-    # 最高気温
+    # 横線: 最低気温
     temper = round(df_data[COL_TEMP_OUT].max(), 1)
     ax_temp.axhline(temper, label=f"最高 {temper:4.1f} ℃",
                     color="orange", linestyle="dashed", linewidth=1.)
-    # 平均気温
+    # 横線: 平均気温
     temper = round(df_data[COL_TEMP_OUT].mean(), 1)
     ax_temp.axhline(temper, label=f"平均 {temper:4.1f} ℃",
                     color="red", linestyle="dashdot", linewidth=1.)
-    # 凡例に固定フォントを設定したい項目を追加
-    ax_temp.legend(loc="best", title="外気温統計情報")
-    # 数値を含むラベルに日本語等倍フォントを設定する
-    ax_temp_legend: Legend = ax_temp.get_legend()
+    # 凡例作成
+    ax_legend: Legend = ax_temp.legend(loc="best", title="外気温統計情報")
+
+    # 凡例のテキストラベルに日本語等倍フォントを設定する
     text: Text
-    for text in ax_temp_legend.get_texts():
+    for text in ax_legend.get_texts():
         text.set_fontfamily("monospace")
     return fig
 

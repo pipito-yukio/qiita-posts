@@ -98,10 +98,9 @@ def make_graph(df_data: DataFrame, stat: TempOutStat) -> Figure:
     plot_hline_with_label(ax_temp, "平均", stat.average_temper, COLOR_AVG_TEMPER,
                           line_style="dashdot", appear_time=None
                           )
-    ax_temp.legend(loc="best", title="外気温統計情報")
+    ax_legend: Legend = ax_temp.legend(loc="best", title="外気温統計情報")
 
     # 数値を含むラベルに日本語等倍フォントを設定する
-    ax_legend: Legend = ax_temp.get_legend()
     text: Text
     for text in ax_legend.get_texts():
         text.set_fontfamily("monospace")
