@@ -1,0 +1,9 @@
+{
+  "urls": {
+    "wifi": "http://your-host:5000/plot_weather",
+    "mobile": "http://raspi-4-dev.local:5000/plot_weather"
+  },
+  "headers": {
+    "X-Request-Network-Type": "wifi"
+  }
+}
