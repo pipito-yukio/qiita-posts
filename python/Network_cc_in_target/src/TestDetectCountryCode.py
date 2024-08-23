@@ -16,7 +16,7 @@ from db import pgdatabase
 
 """
 [Qiita投稿No38用スクリプト]
-指定されたIPアドレスのネットワーク(CIDR表記)と国コードを RIR_ipv4_allocatedテーブルから取得する
+指定されたIPアドレスの属するネットワーク(CIDR表記)と国コードをRIRデータから取得する
 """
 
 # データベース接続情報
@@ -73,7 +73,7 @@ def get_rir_table_matches(
     result: List[Tuple[str, int, str]]
     try:
         cur: cursor
-        # ゼロ埋めしたIPアドレスの昇順にソートする
+        # 前ゼロ埋めしたIPアドレスの昇順にソートする
         with conn.cursor() as cur:
             cur.execute("""
 SELECT
@@ -104,13 +104,6 @@ ORDER BY
         raise err
 
 
-@typing.no_type_check
-def match_greater_target(
-        target_ip_addr: IPv4Address, ip_start: str) -> bool:
-    ip_start_addr: IPv4Address = ip_address(ip_start)
-    return ip_start_addr > target_ip_addr
-
-
 def get_matches_main(
         conn: connection,
         target_ip: str,
@@ -135,25 +128,32 @@ def get_matches_main(
     while like_ip is not None:
         matches = get_rir_table_matches(conn, like_ip, logger=logger)
         if len(matches) > 0:
-            # 最初に見つかったレコードのネットワークIPがターゲットIPより大きい場合は除外する
-            # (例) target_ip=83.222.191.62
-            #   ▲ 一致するが範囲外:  target_ip < match_ip=83.222.192.0
-            #   ● 一致しかつ有効範囲: target_ip >= match_ip=83.222.184.0
-            match_first: Tuple[str, int, str] = matches[0]
+            # 先頭レコードの開始IPアドレス
+            first_ip: str = matches[0][0]
+            first_ip_addr: IPv4Address = ip_address(first_ip)  # type: ignore
+            # 最終レコードの開始IPアドレス
+            last: Tuple[str, int, str] = matches[-1]
+            last_ip: str = last[0]
+            ip_cnt: int = int(last[1])
+            last_ip_addr: IPv4Address = ip_address(last_ip)  # type: ignore
+            # 最終レコードのブロードキャストアドレス計算
+            broadcast_addr: IPv4Address = last_ip_addr + ip_cnt - 1  # type: ignore
             if logger is not None:
-                logger.info(f"match_first_ip: {match_first[0]}")
-            match_greader: bool = match_greater_target(target_ip_addr, match_first[0])
-            if match_greader:
-                # 範囲外のネットワークIP
+                logger.info(f"match_first: {first_ip}, match_last: {last_ip}")
+
+            if first_ip_addr < target_ip_addr < broadcast_addr:
+                # ターゲットIPが先頭レコードの開始IPと最終レコードのブロードキャストの範囲内なら終了
                 if logger is not None:
-                    logger.info(f"({match_first[0]} > {target_ip}) continue")
-                # 次のlike検索を実行
-                like_ip = make_like_ip(like_ip)
-            else:
-                # 先頭のレコードが範囲内のネットワークIPアドレスなら終了
-                if logger is not None:
-                    logger.info(f"({match_first[0]} <= {target_ip}) break")
+                    logger.debug(
+                        f"Range in ({first_ip} < {target_ip} < {str(broadcast_addr)})"
+                        f", break"
+                    )
                 break
+            else:
+                # 範囲外: 次のlike検索文字列を生成して検索処理に戻る
+                like_ip = make_like_ip(like_ip)
+                if logger is not None:
+                    logger.info(f"next {like_ip} continue.")
         else:
             # レコード無し: 次のlike検索文字列を生成して検索処理に戻る
             if logger is not None:
@@ -176,7 +176,7 @@ def detect_cc_in_matches(
     rec: RirRecord
     for rec in next_record(matches):
         # ターゲットIP が ネットワークIPアドレスより大きい場合は範囲外のため処理終了
-        if match_greater_target(target_ip_addr, rec.ip_start):
+        if ip_address(rec.ip_start) > target_ip_addr:  # type: ignore
             if logger is not None:
                 logger.debug(
                     f"{target_ip} < {rec.ip_start} break. No more match."
@@ -215,19 +215,13 @@ def exec_main():
     args: argparse.Namespace = parser.parse_args()
     target_ip: str = args.target_ip
     enable_debug: bool = args.enable_debug
-    app_logger.info(f"target_ip: {target_ip}. enable_debug: {enable_debug}")
 
-    # Suppress: Incompatible types in assignment (expression has type
-    #  "IPv4Address | IPv6Address", variable has type "IPv4Address")  [assignment]
-    #  See: https://mypy.readthedocs.io/en/stable/
-    #     type_inference_and_annotations.html#type-ignore-error-codes
     db: Optional[pgdatabase.PgDatabase] = None
     try:
         db = pgdatabase.PgDatabase(DB_CONF_FILE, logger=None)
         conn: connection = db.get_connection()
         matches: Optional[List[Tuple[str, int, str]]] = get_matches_main(
             conn, target_ip, logger=app_logger if enable_debug else None)
-        app_logger.info("Match table Finished.")
     except psycopg2.Error as db_err:
         app_logger.error(db_err)
         exit(1)

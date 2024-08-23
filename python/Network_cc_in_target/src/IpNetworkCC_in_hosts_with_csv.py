@@ -57,12 +57,16 @@ def write_text_lines(file_name: str, save_list: List[str],
                      append_file: bool = False) -> None:
     save_mode: str = 'a' if append_file else 'w'
     with open(file_name, save_mode) as fp:
-        for save_line in save_list:
-            fp.write(f"{save_line}\n")
+        for line in save_list:
+            fp.write(f"{line}\n")
         fp.flush()
 
 
 @typing.no_type_check
+# Incompatible types in assignment (expression has type
+#  "IPv4Address | IPv6Address", variable has type "IPv4Address")  [assignment]
+#  See: https://mypy.readthedocs.io/en/stable/
+#     type_inference_and_annotations.html#type-ignore-error-codes
 def get_cidr_cc_list(ip_start: str,
                      ip_count: int,
                      country_code: str) -> List[Tuple[IPv4Network, str]]:
@@ -76,7 +80,7 @@ def get_cidr_cc_list(ip_start: str,
 def detect_cc_in_cidr_cc_list(
         target_ip: str,
         cidr_cc_list: List[Tuple[IPv4Network, str]]
-) -> Tuple[Optional[str], Optional[str]]:
+        ) -> Tuple[Optional[str], Optional[str]]:
     target_ip_addr: IPv4Address = ip_address(target_ip)
     match_network: Optional[str] = None
     match_cc: Optional[str] = None
@@ -98,7 +102,7 @@ def get_rir_table_matches(
     result: List[Tuple[str, int, str]]
     try:
         cur: cursor
-        # ゼロ埋めしたIPアドレスの昇順にソートする
+        # 前ゼロ埋めしたIPアドレスの昇順にソートする
         with conn.cursor() as cur:
             cur.execute("""
 SELECT
@@ -129,13 +133,6 @@ ORDER BY
         raise err
 
 
-@typing.no_type_check
-def match_greater_target(
-        target_ip_addr: IPv4Address, ip_start: str) -> bool:
-    ip_start_addr: IPv4Address = ip_address(ip_start)
-    return ip_start_addr > target_ip_addr
-
-
 def detect_cc_in_matches(
         target_ip_addr: IPv4Address,
         matches: List[Tuple[str, int, str]],
@@ -149,8 +146,9 @@ def detect_cc_in_matches(
     match_cc: Optional[str] = None
     rec: RirRecord
     for rec in next_record(matches):
-        # ターゲットIP が ネットワークIPアドレスより大きい場合は処理終了
-        if match_greater_target(target_ip_addr, rec.ip_start):
+        # ターゲットIP が ネットワークIPアドレスより大きい場合は範囲外のため処理終了
+        if ip_address(rec.ip_start) > target_ip_addr:  # type: ignore
+            # マッチするデータなし
             break
 
         # 開始ネットワークIPのブロードキャストアドレスがターゲットIPより小さければ次のレコードへ
@@ -209,8 +207,7 @@ def rir_table_matches_main(
         target_ip_list: List[str],
         dict_ip_network_cc: Optional[Dict[str, IpNetworkWithCC]],
         unknown_ip_list: Optional[List[str]],
-        logger: logging.Logger,
-        enable_debug: bool = False) -> None:
+        logger: logging.Logger, enable_debug: bool = False) -> None:
     def make_like_ip(like_old: str) -> Optional[str]:
         # 末尾の likeプレースホルダを削除する
         raw_ip: str = like_old.replace(".%", "")
@@ -235,22 +232,32 @@ def rir_table_matches_main(
                 conn, like_ip, logger=logger if enable_debug else None
             )
             if len(matches) > 0:
-                match_first: Tuple[str, int, str] = matches[0]
+                # 先頭レコードの開始IPアドレス
+                first_ip: str = matches[0][0]
+                first_ip_addr: IPv4Address = ip_address(first_ip)  # type: ignore
+                # 最終レコードの開始IPアドレス
+                last: Tuple[str, int, str] = matches[-1]
+                last_ip: str = last[0]
+                ip_cnt: int = int(last[1])
+                last_ip_addr: IPv4Address = ip_address(last_ip)  # type: ignore
+                # 最終レコードのブロードキャストアドレス計算
+                broadcast_addr: IPv4Address = last_ip_addr + ip_cnt - 1  # type: ignore
                 if enable_debug:
-                    logger.debug(f"{i + 1:04d}: match_first_ip: {match_first[0]}")
-                match_greader: bool = match_greater_target(target_ip_addr,
-                                                           match_first[0])
-                if match_greader:
-                    # 範囲外のネットワークIP
-                    if enable_debug:
-                        logger.debug(f"({match_first[0]} > {target_ip}) continue")
-                    # 次のlike検索を実行
-                    like_ip = make_like_ip(like_ip)
-                else:
-                    # 先頭のレコードが範囲内のネットワークIPアドレスなら終了
-                    if enable_debug:
-                        logger.debug(f"({match_first[0]} <= {target_ip}) break")
+                    logger.debug(f"{i + 1:04d}: first_ip: {first_ip}, last_ip: {last_ip}")
+
+                if first_ip_addr < target_ip_addr < broadcast_addr:
+                    # ターゲットIPが先頭レコードの開始IPと最終レコードのブロードキャストの範囲内なら終了
+                    if logger is not None:
+                        logger.debug(
+                            f"Range in ({first_ip} < {target_ip} < {str(broadcast_addr)})"
+                            f", break"
+                        )
                     break
+                else:
+                    # 範囲外: 次のlike検索文字列を生成して検索処理に戻る
+                    like_ip = make_like_ip(like_ip)
+                    if logger is not None:
+                        logger.info(f"next {like_ip} continue.")
             else:
                 # レコード無し: 次のlike検索文字列を生成して検索処理に戻る
                 if enable_debug:
@@ -319,9 +326,10 @@ def export_main():
     parser.add_argument("--enable-debug", action="store_true",
                         help="Enable logger debug out.")
     args: argparse.Namespace = parser.parse_args()
+    csv_file: str = args.csv_file
+    enable_debug: bool = args.enable_debug
 
     # CSVファイルのパスチェック
-    csv_file: str = args.csv_file
     csv_path: str
     if csv_file[0] == "~":
         # ユーザーディレクトリ
@@ -340,7 +348,6 @@ def export_main():
         app_logger.info("Empty csv record.")
         exit(0)
 
-    enable_debug: bool = args.enable_debug
     # ソート済みのチェック用IPアドレスリスト
     target_ip_list: List[str] = sorted_ip_addr_list(csv_lines)
     # ファイルの出力先ディレクトリ
@@ -360,7 +367,6 @@ def export_main():
             conn, target_ip_list, dict_ip_network_cc, unknown_ip_list,
             app_logger, enable_debug
         )
-
     except psycopg2.Error as db_err:
         app_logger.error(db_err)
         exit(1)
