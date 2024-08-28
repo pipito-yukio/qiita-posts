@@ -1,9 +1,13 @@
-[Qiita] 「不正アクセスしてきたホストの国コードを知ってセキュリティ対策に活用する」で解説したソースコード
+[Qiita] 「不正アクセスしてきたホストの国コードを知ってセキュリティ対策に活用する」で解説したソースコードと生成ファイル
 
 ソースの構成
 ```
 Network_cc_in_target/
 ├── README.md
+├── output
+│   └── match_networks
+│       ├── ip_network_cc_with_hosts_2024-08-28.txt
+│       └── unknown_ip_hosts_2024-08-28.txt
 ├── requirements.txt
 ├── scripts
 │   ├── find_target_ip_like_param.sh
@@ -11,6 +15,7 @@ Network_cc_in_target/
 ├── sql
 │   └── 14_add_ipv4_table.sql
 └── src
+    ├── IpNetworkCC_in_hosts.py
     ├── IpNetworkCC_in_hosts_with_csv.py
     ├── TestDetectCountryCode.py
     ├── conf
@@ -20,9 +25,7 @@ Network_cc_in_target/
     │   └── ssh_auth_error_cc_match.csv
     ├── db
     │   └── pgdatabase.py
-    ├── logs
-    ├── mypy.ini
-    └── output
+    └── mypy.ini
 ```
 
 dockerコンテナ生成関連リソースとテーブル作成SQLなどについては下記にソースを配置しています
