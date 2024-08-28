@@ -351,8 +351,7 @@ def save_network_cc_dict(
     for key in dict_ip_network_cc.keys():
         net_cc_rec = dict_ip_network_cc[key]
         line_hosts: str = '",\n"'.join(net_cc_rec.ip_hosts)
-        hosts_size: int = len(net_cc_rec.ip_hosts)
-        line: str = f'"{key}","{net_cc_rec.country_code}",({hosts_size})["{line_hosts}"]'
+        line: str = f'"{key}","{net_cc_rec.country_code}",["{line_hosts}"]'
         net_cc_lines.append(line)
     write_text_lines(save_file, net_cc_lines)
     logger.info(f"Saved: {save_file}")
