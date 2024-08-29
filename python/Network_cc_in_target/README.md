@@ -32,12 +32,14 @@ Network_cc_in_target/
 下記JSONファイル中で定義しているディレクトリ("output-dir"と"match-networks-dir")は作成済みであることを前提としています。
 
 [src/conf/export_sql_with_ip_country_code.json]
+```json
 {
   "output-dir": "~/Documents/qiita/sql/batch",
   "query": {
     "match-networks-dir": "~/Documents/qiita/match_networks"
   }
 }
+```
 
 
 dockerコンテナ生成関連リソースとテーブル作成SQLなどについては下記にソースを配置しています
