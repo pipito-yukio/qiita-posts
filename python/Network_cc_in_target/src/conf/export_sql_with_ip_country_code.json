@@ -1,0 +1,6 @@
+{
+  "output-dir": "~/Documents/qiita/sql/batch",
+  "query": {
+    "match-networks-dir": "~/Documents/qiita/match_networks"
+  }
+}
