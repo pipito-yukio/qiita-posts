@@ -19,7 +19,8 @@ Network_cc_in_target/
     ├── IpNetworkCC_in_hosts_with_csv.py
     ├── TestDetectCountryCode.py
     ├── conf
-    │   └── db_conn.json
+    │   ├── db_conn.json
+    │   └── export_sql_with_ip_country_code.json
     ├── csv
     │   ├── ssh_auth_error_2024-06-10.csv
     │   └── ssh_auth_error_cc_match.csv
