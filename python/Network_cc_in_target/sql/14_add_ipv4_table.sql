@@ -1,7 +1,7 @@
 -- qiita-exampledb
 
-DROP TABLE mainte2.RIR_registory_mst CASCADE;
-DROP TABLE mainte2.RIR_ipv4_allocated CASCADE;
+DROP TABLE IF EXISTS mainte2.RIR_ipv4_allocated CASCADE;
+DROP TABLE IF EXISTS mainte2.RIR_registory_mst;
 
 -- 2024-08-06 レジストリ名テーブル追加
 -- name: {afrinic,apnic,arin,iana,lacnic,ripencc}
