@@ -30,5 +30,7 @@ BatchInsert_from_ssh_auth_error_csv/
         └── pgdatabase.py
 ```
 
-3ヶ月分のCSVファイルは下記GitHubサイトで公開しています。
+約3ヶ月分のCSVファイルは下記GitHubサイトで公開しています。  
+[期間] 2024-06-10 〜 2024-09-08  
+[GitHub pipito-yukio / ubuntu_server_tools / csv /](https://github.com/pipito-yukio/ubuntu_server_tools/tree/main/csv)
 
