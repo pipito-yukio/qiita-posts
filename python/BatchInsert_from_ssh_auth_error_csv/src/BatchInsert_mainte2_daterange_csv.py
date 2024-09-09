@@ -29,8 +29,6 @@ Qiita投稿用スクリプト
 
 # データベース接続情報
 DB_CONF_FILE: str = os.path.join("conf", "db_conn.json")
-# CSVファイルディレクトリ
-CSV_DIR: str = "~/Documents/webriverside/csv"
 
 
 @dataclass(frozen=True)
@@ -378,6 +376,9 @@ def batch_main():
     app_logger.setLevel(level=logging.INFO)
 
     parser: argparse.ArgumentParser = argparse.ArgumentParser()
+    # CSVファイルが格納されているディレクトリ
+    parser.add_argument("--csv-dir", type=str, required=True,
+                        help="CSV file directory.")
     # レコード登録用CSVファイルの処理開始日付
     parser.add_argument("--from-date", type=str, required=True,
                         help="CSV file from date.")
@@ -385,6 +386,17 @@ def batch_main():
     parser.add_argument("--to-date", type=str, required=True,
                         help="CSV file to date.")
     args: argparse.Namespace = parser.parse_args()
+    # CSVディレクトリ
+    csv_dir: str = args.csv_dir
+    csv_dir_path: str
+    if csv_dir.find("~") == 0:
+        csv_dir_path = os.path.expanduser(csv_dir)
+    else:
+        csv_dir_path = csv_dir
+    if not os.path.exists(csv_dir_path):
+        app_logger.warning(f"{csv_dir_path} not found!")
+        exit(1)
+
     # CSVファイルの開始日
     from_date: str = args.from_date
     to_date: str = args.to_date
@@ -400,7 +412,6 @@ def batch_main():
         exit(1)
 
     # CSVディレクトリ内のファイルリスト
-    csv_dir_path: str = os.path.expanduser(CSV_DIR)
     # 指定したディレクトリ内の全てのCSVファイル ※取得したファイルはソートされていない
     csv_files: List[str] = glob.glob(os.path.join(csv_dir_path, "ssh_auth_error_*.csv"))
     csv_files = sorted(csv_files)
