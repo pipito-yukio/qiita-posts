@@ -1,4 +1,5 @@
 import argparse
+import csv
 import logging
 import os
 from dataclasses import dataclass, asdict
@@ -7,7 +8,7 @@ from ipaddress import (
     IPv4Network, IPv4Address
 )
 import typing
-from typing import List, Iterator, Optional, Tuple
+from typing import Dict, List, Iterator, Optional, Tuple
 
 import psycopg2
 from psycopg2.extensions import connection, cursor
@@ -203,6 +204,29 @@ def detect_cc_in_matches(
     return match_network, match_cc
 
 
+def read_csv(file_name: str,
+             skip_header=True, header_cnt=1) -> List[str]:
+    with open(file_name, 'r') as fp:
+        reader = csv.reader(fp, dialect='unix')
+        if skip_header:
+            for skip in range(header_cnt):
+                next(reader)
+        # リストをカンマ区切りで連結する
+        csv_lines = [",".join(rec) for rec in reader]
+    return csv_lines
+
+
+def read_cc_name_csv_todict(f_path: str) -> Dict[str, str]:
+    result: Dict[str, str] = dict()
+    lines: List[str] = read_csv(f_path)
+    # ヘッダー: "country_code","japanese_name","public_name"
+    for line in lines:
+        fileds: List[str] = line.split(",")
+        # 国コード: 日本語表記
+        result[fileds[0]] = fileds[1]
+    return result
+
+
 def exec_main():
     logging.basicConfig(format='%(levelname)s %(message)s')
     app_logger = logging.getLogger(__name__)
@@ -212,9 +236,23 @@ def exec_main():
                         help="IP address.")
     parser.add_argument("--enable-debug", action="store_true",
                         help="Enable logger debug out.")
+    # 国名コードと国名称CSVファイル ※任意
+    parser.add_argument("--cc-name-csv", type=str,
+                        help="Country code name CSV file.")
     args: argparse.Namespace = parser.parse_args()
     target_ip: str = args.target_ip
     enable_debug: bool = args.enable_debug
+
+    # 国名コードと国名CSVファイルが指定されている場合はファイル存在チェック
+    dict_cc_name: Optional[Dict[str, str]] = None
+    cc_name_csv_file: Optional[str] = args.cc_name_csv
+    if cc_name_csv_file is not None:
+        if not os.path.exists(cc_name_csv_file):
+            app_logger.warning(f"{cc_name_csv_file} not found!")
+            exit(1)
+
+        # CSVファイル読み込み
+        dict_cc_name = read_cc_name_csv_todict(cc_name_csv_file)
 
     db: Optional[pgdatabase.PgDatabase] = None
     try:
@@ -239,9 +277,19 @@ def exec_main():
         network, cc = detect_cc_in_matches(
             target_ip, matches, logger=app_logger if enable_debug else None)
         if network is not None and cc is not None:
-            app_logger.info(
-                f'Find {target_ip} in (network: "{network}", country_code: "{cc}")'
-            )
+            # 国名コードと国名(日本語表記) 辞書オブジェクトが存在したら国名(日本語表記)を取得
+            jp_name: Optional[str] = None
+            if dict_cc_name is not None:
+                jp_name = dict_cc_name.get(cc)
+            if jp_name is not None:
+                # 国コードと国名(日本語表記)を出力
+                app_logger.info(
+                    f'Find {target_ip} in (network: "{network}", "{cc}:{jp_name}")'
+                )
+            else:
+                app_logger.info(
+                    f'Find {target_ip} in (network: "{network}", country_code: "{cc}")'
+                )
         else:
             app_logger.info(f"Not match in data.")
     else:
