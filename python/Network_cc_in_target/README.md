@@ -1,5 +1,9 @@
 [Qiita] 「不正アクセスしてきたホストの国コードを知ってセキュリティ対策に活用する」で解説したソースコードと生成ファイル
 
+2024-09-12 Qiita投稿記事によりリソースを追加、コードの修正 (★印)  
+[Qiita@pipito-yukio「国名コード表から抽出した国コードと日本語を含む名称を分割する正規表現」](https://qiita.com/pipito-yukio/items/bd7d51ae4e43cee9311a)
+
+
 ソースの構成
 ```
 Network_cc_in_target/
@@ -15,15 +19,17 @@ Network_cc_in_target/
 │   ├── find_target_ip_like_param.sh
 │   └── import_from_allocated_ipv4_csv.sh
 ├── sql
-│   └── 14_add_ipv4_table.sql
+│   ├── 14_add_ipv4_table.sql
+│   └── 17_create_country_code_name_mst.sql  # ★ 2024-09-12 追加
 └── src
     ├── IpNetworkCC_in_hosts.py
     ├── IpNetworkCC_in_hosts_with_csv.py
-    ├── TestDetectCountryCode.py
+    ├── TestDetectCountryCode.py              # ★ 2024-09-12 機能追加により更新
     ├── conf
     │   ├── db_conn.json
     │   └── export_sql_with_ip_country_code.json
     ├── csv
+    │   ├── country_code_name.csv             # ★ 2024-09-12 追加
     │   ├── ssh_auth_error_2024-06-10.csv
     │   └── ssh_auth_error_cc_match.csv
     ├── db
