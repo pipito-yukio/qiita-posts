@@ -1,0 +1,14 @@
+[Unit]
+Description=PostgreSQL container start service
+After=docker.service
+
+[Service]
+Type=notify
+TimeoutStartSec=0
+NotifyAccess=all
+EnvironmentFile=/etc/default/postgresql-docker
+ExecStart=/bin/sh -c "/home/raspi/bin/postgres-docker-service.sh start $BUILD_PATH"
+User=raspi
+
+[Install]
+WantedBy=multi-user.target
