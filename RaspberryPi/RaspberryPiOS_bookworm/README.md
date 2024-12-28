@@ -3,9 +3,9 @@
 それぞれ Raspberry Pi OS (bookworm) の NetworkManager用の接続設定ファイルを生成するスクリプトです。
 
 スクリプトの内容に関しては以下の投稿をご覧ください。
-+ (1) 有線ネットワーク用の接続設定ファイル生成スクリプト
++ (1) 有線ネットワーク用の接続設定ファイル生成スクリプト  
 [(Qiia@pipito-yukio) Raspberry Pi OS (bookworm) OSインストール時に固定IPアドレスを設定する](https://qiita.com/pipito-yukio/items/8538bc50ba06f4aa2f7a)
-+ (2) Wi-Fiネットワーク用の接続設定ファイル生成スクリプト
++ (2) Wi-Fiネットワーク用の接続設定ファイル生成スクリプト  
 [(Qiia@pipito-yukio) Raspberry Pi OS (bookworm) インストール時に固定IPアドレスを設定する(続編)](https://qiita.com/pipito-yukio/items/86233e0fff8466d9355e)
 
 
