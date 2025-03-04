@@ -1,0 +1,9 @@
+{
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:107.0) Gecko/20100101 Firefox/107.0",
+  "downloadHeaders": {
+    "Accept": "*/*",
+    "Accept-Language": "ja,en-US;q=0.7,en;q=0.3",
+    "Accept-Encoding": "gzip, deflate, br, zstd",
+    "Connection": "keep-alive"
+  }
+}
